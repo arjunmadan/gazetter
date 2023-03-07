@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path"
+	"path/filepath"
 	"sync"
 )
 
@@ -22,7 +22,7 @@ func generateUrls(start int, end int, url string, year int, dir string, gazettes
 	for i := start; i <= end; i++ {
 		gazettes <- &Gazette{
 			url:      fmt.Sprintf("%s/%d/%d.pdf", url, year, i),
-			filepath: path.Join(dir, fmt.Sprintf("%d.pdf", i)),
+			filepath: filepath.Join(dir, fmt.Sprintf("%d.pdf", i)),
 		}
 	}
 	close(gazettes)

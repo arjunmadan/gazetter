@@ -1,5 +1,5 @@
 # gazetter
-Get articles from the Indian Gazette
+Get articles from the Gazette of India
 
 ## Usage
 

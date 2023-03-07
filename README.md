@@ -16,6 +16,15 @@ The CLI takes in 4 arguments:
 
 Example Usage:
 
+On Linux/Mac:
+
 ```bash
 ./gazetter -url <url> -year 2020 -start 200000 -end 220000 -dir /Users/arjunmadan/Downloads
+```
+
+
+On Windows:
+
+```shell
+gazetter.exe -url <url> -year 2020 -start 200000 -end 220000 -dir /Users/arjunmadan/Downloads
 ```

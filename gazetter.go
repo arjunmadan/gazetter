@@ -43,7 +43,7 @@ func main() {
 
 	for i := 0; i < 20; i++ {
 		wg.Add(1)
-		go downloadFile(gazettes)
+		go processUrls(gazettes)
 	}
 
 	go generateUrls(*start, *end, *url, *year, *dir, gazettes)
@@ -52,27 +52,31 @@ func main() {
 
 }
 
-func downloadFile(gazettes <-chan *Gazette) {
+func processUrls(gazettes <-chan *Gazette) {
 	defer wg.Done()
 	for gazette := range gazettes {
-		resp, err := http.Get(gazette.url)
-		if err != nil {
-			fmt.Printf("error: %s", err)
-		}
-		defer resp.Body.Close()
+		downloadFile(gazette.url, gazette.filepath)
+	}
+}
 
-		if resp.StatusCode == http.StatusOK {
-			out, err := os.Create(gazette.filepath)
-			if err != nil {
-				fmt.Printf("error: %s\n", err)
-			}
-			defer out.Close()
-			fmt.Printf("download %s to %s complete\n", gazette.url, gazette.filepath)
-			io.Copy(out, resp.Body)
-		} else if resp.StatusCode == http.StatusNotFound {
-			fmt.Printf("file not found: %s\n", gazette.url)
-		} else {
-			fmt.Printf("error, got status code: %d for url: %s\n", resp.StatusCode, gazette.url)
+func downloadFile(url string, filepath string) {
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Printf("error: %s", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusOK {
+		out, err := os.Create(filepath)
+		if err != nil {
+			fmt.Printf("error: %s\n", err)
 		}
+		defer out.Close()
+		fmt.Printf("download %s to %s\n", url, filepath)
+		io.Copy(out, resp.Body)
+	} else if resp.StatusCode == http.StatusNotFound {
+		fmt.Printf("file not found: %s\n", url)
+	} else {
+		fmt.Printf("error, got status code: %d for url: %s\n", resp.StatusCode, url)
 	}
 }

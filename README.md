@@ -26,5 +26,5 @@ On Linux/Mac:
 On Windows:
 
 ```shell
-gazetter.exe -url <url> -year 2020 -start 200000 -end 220000 -dir /Users/arjunmadan/Downloads
+gazetter.exe -url <url> -year 2020 -start 200000 -end 220000 -dir C:\\Users\arjunmadan\Downloads
 ```

@@ -33,7 +33,15 @@ func generateUrls(start int, end int, url string, year int, dir string, gazettes
 
 func generateTnExtraordinaryUrls(url string, year int, dir string, gazettes chan<- *Gazette) {
 	// http://www.stationeryprinting.tn.gov.in/extraordinary/extraord_list2022.php
-	response, err := http.Get(fmt.Sprintf("%s%d.php", url, year))
+	var gazUrl string
+
+	if year != 2023 {
+		gazUrl = fmt.Sprintf("%s%d.php", url, year)
+	} else {
+		gazUrl = fmt.Sprintf("%s.php", url)
+	}
+
+	response, err := http.Get(gazUrl)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -57,7 +65,14 @@ func generateTnExtraordinaryUrls(url string, year int, dir string, gazettes chan
 
 func generateTnWeeklyUrls(url string, year int, dir string, gazettes chan<- *Gazette) {
 	// http://www.stationeryprinting.tn.gov.in/gazette/gazette_list2022.php
-	response, err := http.Get(fmt.Sprintf("%s%d.php", url, year))
+	var gazUrl string
+
+	if year != 2023 {
+		gazUrl = fmt.Sprintf("%s%d.php", url, year)
+	} else {
+		gazUrl = fmt.Sprintf("%s.php", url)
+	}
+	response, err := http.Get(gazUrl)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -71,7 +86,6 @@ func generateTnWeeklyUrls(url string, year int, dir string, gazettes chan<- *Gaz
 		url, _ := s.Attr("href")
 		if strings.Contains(url, "issueno") {
 			//http://www.stationeryprinting.tn.gov.in/gazette/gazette_det2022.php?issueno=52
-			fmt.Println(s.Attr("href"))
 			response, err := http.Get(fmt.Sprintf("http://www.stationeryprinting.tn.gov.in/gazette/%s", url))
 			if err != nil {
 				log.Fatal(err)
@@ -98,7 +112,8 @@ func generateTnWeeklyUrls(url string, year int, dir string, gazettes chan<- *Gaz
 }
 
 func main() {
-	gazettes := make(chan *Gazette)
+	gazettes1 := make(chan *Gazette)
+	gazettes2 := make(chan *Gazette)
 
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -116,14 +131,18 @@ func main() {
 
 	for i := 0; i < 20; i++ {
 		wg.Add(1)
-		go processUrls(gazettes)
+		go processUrls(gazettes1)
 	}
 
 	if *gaz == "" {
-		go generateUrls(*start, *end, *url, *year, *dir, gazettes)
+		go generateUrls(*start, *end, *url, *year, *dir, gazettes1)
 	} else if *gaz == "TN" {
-		go generateTnWeeklyUrls("http://www.stationeryprinting.tn.gov.in/gazette/gazette_list", *year, *dir, gazettes)
-		go generateTnExtraordinaryUrls("http://www.stationeryprinting.tn.gov.in/extraordinary/extraord_list", *year, *dir, gazettes)
+		for i := 0; i < 20; i++ {
+			wg.Add(1)
+			go processUrls(gazettes2)
+		}
+		go generateTnWeeklyUrls("http://www.stationeryprinting.tn.gov.in/gazette/gazette_list", *year, *dir, gazettes1)
+		go generateTnExtraordinaryUrls("http://www.stationeryprinting.tn.gov.in/extraordinary/extraord_list", *year, *dir, gazettes2)
 	}
 
 	wg.Wait()
